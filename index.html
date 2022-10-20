@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Websocket Game</title>
+  </head>
+  <body>
+    <div id="preGame">
+      <label for="username">If you want type username or leave it blank.</label>
+      <input type="text" name="username" id="username" placeholder="Username" />
+      <button id="play">Play!</button>
+    </div>
+
+    <!--- SCRIPT THINGS  --->
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+
+      var playBtn = document.getElementById("play");
+      var usernameInput = document.getElementById("username");
+
+      playBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        console.log("Btn clicked!");
+        let username;
+        usernameInput.value && usernameInput.value.length > 1
+          ? (username = usernameInput.value)
+          : (username = null);
+
+        socket.emit("setUsername", { name: username });
+        var preGame = document.getElementById("preGame");
+        preGame.remove();
+
+        var usernameShow = document.createElement("div");
+        document.body.appendChild(usernameShow)
+        if(username !== null) return usernameShow.innerText = username;
+        socket.on("noUsername", (details) => {
+            usernameShow.innerText = details.name;
+            console.log("We saw here.")
+        }) 
+      });
+    </script>
+  </body>
+</html>
