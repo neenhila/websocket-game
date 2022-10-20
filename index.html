@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Websocket Game</title>
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
     <div id="preGame">
@@ -13,18 +14,26 @@
       <button id="play">Play!</button>
     </div>
 
+    <div class="lastCreated">Name of the last user: <span id="lastUser"></span></div>
     <!--- SCRIPT THINGS  --->
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
       var socket = io();
+      let firstPlayerName;
+      const getLastItemInJSON = (json) => {
+          return json[Object.keys(json).at(-1)]
+      }
+      socket.on("players", (players) => {
+        if(players) firstPlayerName = getLastItemInJSON(players).name;
+        document.getElementById("lastUser").innerText = firstPlayerName;
+      });
 
       var playBtn = document.getElementById("play");
       var usernameInput = document.getElementById("username");
 
       playBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        console.log("Btn clicked!");
         let username;
         usernameInput.value && usernameInput.value.length > 1
           ? (username = usernameInput.value)
@@ -35,12 +44,13 @@
         preGame.remove();
 
         var usernameShow = document.createElement("div");
-        document.body.appendChild(usernameShow)
-        if(username !== null) return usernameShow.innerText = username;
+        document.body.appendChild(usernameShow);
+        usernameShow.innerText = firstPlayerName;
+        if (username !== null) return (usernameShow.innerText = username);
         socket.on("noUsername", (details) => {
-            usernameShow.innerText = details.name;
-            console.log("We saw here.")
-        }) 
+          usernameShow.innerText = details.name;
+        });
+        
       });
     </script>
   </body>
