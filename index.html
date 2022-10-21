@@ -5,16 +5,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Websocket Game</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div id="preGame">
       <label for="username">If you want type username or leave it blank.</label>
-      <input type="text" name="username" id="username" placeholder="Username" />
+      <input
+        type="text"
+        name="username"
+        id="username"
+        placeholder="Username"
+        autocomplete="off"
+      />
       <button id="play">Play!</button>
     </div>
 
-    <div class="lastCreated">Name of the last user: <span id="lastUser"></span></div>
+    <div class="lastCreated">
+      Name of the last user: <span id="lastUser"></span>
+    </div>
     <!--- SCRIPT THINGS  --->
 
     <script src="/socket.io/socket.io.js"></script>
@@ -22,17 +30,14 @@
       var socket = io();
       let firstPlayerName;
       const getLastItemInJSON = (json) => {
-          return json[Object.keys(json).at(-1)]
-      }
-      socket.on("players", (players) => {
-        if(players) firstPlayerName = getLastItemInJSON(players).name;
-        document.getElementById("lastUser").innerText = firstPlayerName;
-      });
+        return json[Object.keys(json).at(-1)];
+      };
 
       var playBtn = document.getElementById("play");
       var usernameInput = document.getElementById("username");
 
       playBtn.addEventListener("click", (e) => {
+
         e.preventDefault();
         let username;
         usernameInput.value && usernameInput.value.length > 1
@@ -44,13 +49,88 @@
         preGame.remove();
 
         var usernameShow = document.createElement("div");
-        document.body.appendChild(usernameShow);
-        usernameShow.innerText = firstPlayerName;
-        if (username !== null) return (usernameShow.innerText = username);
+        usernameShow.classList.add("usernameShow");
+        if (username !== null) firstPlayerName = username;
         socket.on("noUsername", (details) => {
-          usernameShow.innerText = details.name;
+          firstPlayerName = details.name;
         });
-        
+        document.body.appendChild(usernameShow);
+
+        // append Game!
+
+        let gameBoard = document.createElement("div");
+        gameBoard.setAttribute("id", "board");
+        document.body.appendChild(gameBoard);
+
+        let rotationMap = {
+          down: false,
+          top: false,
+          left: false,
+          right: false,
+        };
+        setInterval(() => {
+          if (rotationMap.right) {
+            socket.emit("right", firstPlayerName);
+          }
+          if (rotationMap.left) {
+            socket.emit("left", firstPlayerName);
+          }
+          if (rotationMap.down) {
+            socket.emit("down", firstPlayerName);
+          }
+          if (rotationMap.top) {
+            socket.emit("top", firstPlayerName);
+          }
+        }, 10);
+        document.addEventListener("keypress", (e) => {
+          if (e.key === "d") {
+            rotationMap.right = true;
+          }
+          if (e.key === "w") {
+            rotationMap.top = true;
+          }
+          if (e.key === "a") {
+            rotationMap.left = true;
+          }
+          if (e.key === "s") {
+            rotationMap.down = true;
+          }
+        });
+        document.addEventListener("keyup", (e) => {
+          if (e.key === "d") {
+            rotationMap.right = false;
+          }
+          if (e.key === "w") {
+            rotationMap.top = false;
+          }
+          if (e.key === "a") {
+            rotationMap.left = false;
+          }
+          if (e.key === "s") {
+            rotationMap.down = false;
+          }
+        });
+
+
+        socket.on("players", (players) => {
+          if (players) firstPlayerName = getLastItemInJSON(players).name;
+          document.getElementById("lastUser").innerText = firstPlayerName;
+          usernameShow.innerHTML = `Your username is: <span>${firstPlayerName}</span>`;
+          for (let player in players) {
+            player = players[player]
+            let el = document.getElementById(`${player.name}`);
+            if (el) {
+              el.style.left = player.x + "px";
+              el.style.top = player.y + "px";
+            } else {
+              let playerBox = document.createElement("div");
+              playerBox.setAttribute("class", "player");
+              playerBox.setAttribute("id", player.name);
+              playerBox.setAttribute("data-name", player.name);
+              document.body.appendChild(playerBox);
+            }
+          }
+        });
       });
     </script>
   </body>
