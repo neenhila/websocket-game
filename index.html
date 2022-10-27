@@ -113,8 +113,9 @@
 
 
         socket.on("players", (players) => {
-          if (players) firstPlayerName = getLastItemInJSON(players).name;
-          document.getElementById("lastUser").innerText = firstPlayerName;
+          let textOfUser;
+          if (players) textOfUser = getLastItemInJSON(players).name;
+          document.getElementById("lastUser").innerText = textOfUser;
           usernameShow.innerHTML = `Your username is: <span>${firstPlayerName}</span>`;
           for (let player in players) {
             player = players[player]
