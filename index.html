@@ -117,8 +117,8 @@
           if (players) textOfUser = getLastItemInJSON(players).name;
           document.getElementById("lastUser").innerText = textOfUser;
           usernameShow.innerHTML = `Your username is: <span>${firstPlayerName}</span>`;
-          for (let player in players) {
-            player = players[player]
+          for (const [pl, playerVal] of players.entries()) {
+            let player = players.get(pl);
             let el = document.getElementById(`${player.name}`);
             if (el) {
               el.style.left = player.x + "px";
